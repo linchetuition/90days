@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>日常打卡牆 + 衝動急救站</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f5f5f5;
+      --primary: #f48fb1;
+      --secondary: #ec407a;
+      --accent: #00bcd4;
+      --text: #333;
+      --today-bg: #e0f7fa;
+      --today-border: #00acc1;
+      --day-bg: #FAF4FF;
+      --pending: #e0e0e0;
+      --done: var(--accent);
+      --shadow: rgba(0,0,0,0.1);
+      --trans: 0.2s;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; padding: 1em; }
+    header { width: 100%; background: var(--primary); color: #fff; text-align: center; padding: 1em 0; font-size: 1.6em; box-shadow: 0 2px 4px var(--shadow); }
+    .top-panel { width: 100%; max-width: 600px; display: flex; justify-content: space-between; align-items: flex-start; margin: 1em 0; }
+    .left-panel { display: flex; flex-direction: column; gap: 1em; }
+    .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 1em; }
+    .controls * { font-size: 0.9em; }
+    .controls button { background: var(--secondary); color: #fff; border: none; padding: 0.6em 1.2em; border-radius: 4px; cursor: pointer; transition: transform var(--trans); }
+    .controls button:hover { transform: translateY(-2px); }
+    .slogan-box { width: 60%; font-size: 1.6em; font-style: italic; color: var(--today-border); text-align: left; padding: 0em; }
+    .calendar-container { width: 100%; max-width: 600px; background: #fff; border-radius: 8px; padding: 1em; box-shadow: 0 2px 8px var(--shadow); }
+    .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+    .weekday { text-align: center; font-weight: 500; color: var(--secondary); }
+    .day { position: relative; width: 100%; aspect-ratio: 1; background: var(--day-bg); border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform var(--trans); }
+    .day:hover { transform: scale(1.05); }
+    .day.today { background: var(--today-bg); border: 2px solid var(--today-border); }
+    .day.completed { background: #fce4ec; border: 2px solid var(--secondary); }
+    .day .count { position: absolute; top: 4px; left: 4px; font-size: 0.6em; color: #666; }
+    .progress-container { width: 100%; max-width: 600px; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 1em; }
+    .progress-container .bar { width: 12px; height: 12px; background: var(--pending); border-radius: 2px; }
+    .progress-container .bar.done { background: var(--done); }
+    .modal, .impulse { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; }
+    .modal .content, .impulse .content { background: #fff; border-radius: 8px; width: 90%; max-width: 400px; padding: 1em; display: flex; flex-direction: column; gap: 0.5em; }
+    .task { display: flex; align-items: center; gap: 0.5em; margin: 0.5em 0; }
+    .task input[type="checkbox"] { transform: scale(1.2); }
+    .task button { background: transparent; border: none; color: var(--secondary); cursor: pointer; }
+    .btn { background: var(--secondary); color: #fff; border: none; border-radius: 4px; cursor: pointer; transition: background var(--trans); display: flex; align-items: center; justify-content: center; }
+    #addTaskBtn { background: var(--today-border); color: #fff; padding: 0.6em 1.2em; width: 120px; }
+    #taskInput { border: 1px solid #ccc; border-radius: 4px; padding: 0.6em; height: 2.4em; flex: 1; }
+    .impulse .content button { margin-bottom: 0.5em; padding: 0.6em; background: var(--accent); }
+    #closeImpBtn { background: var(--secondary) !important; }
+    #countdown-box { text-align: center; font-size: 1.2em; margin: 0.5em 0; }
+    #res { text-align: center; margin-top: 0.5em; }
+    #saveTaskBtn { width: 100%; padding: 0.7em; }
+  </style>
+</head>
+<body>
+  <header>🌿 我的打卡牆</header>
+  <div class="top-panel">
+    <div class="left-panel">
+<div class="controls">
+  <!-- 先顯示倒數起始日 -->
+  <label for="startDate">倒數起始日：<input type="date" id="startDate"></label>
+  <!-- 再顯示衝動急救站按鈕 -->
+  <button id="impBtn">衝動急救站</button>
+</div>
+
+      <div class="controls" id="monthControls">
+        <button id="prevMonth">← 上月</button>
+        <span id="calTitle"></span>
+        <button id="nextMonth">下月 →</button>
+      </div>
+    </div>
+    <div class="slogan-box"><p id="slogan"></p></div>
+  </div>
+
+  <div class="calendar-container"><div class="calendar" id="calendar"></div></div>
+  <div class="progress-container" id="progress"></div>
+
+  <div class="modal" id="taskModal"><div class="content">
+      <h3 id="modalDate"></h3>
+      <div id="taskList"></div>
+      <div style="display:flex; gap:0.5em; align-items:center;"><input type="text" id="taskInput" placeholder="新增打卡任務..."><button id="addTaskBtn" class="btn">新增</button></div>
+      <button id="saveTaskBtn" class="btn">儲存</button>
+    </div></div>
+
+  <div class="impulse" id="impulseModal"><div class="content">
+      <h3>🍭 衝動急救站</h3>
+      <div id="impulseCountText"></div>
+      <button id="eatBtn" class="btn">🍬 吃下去</button>
+      <button id="delayBtn" class="btn">⏳ 延後10分鐘</button>
+      <button id="replaceBtn" class="btn">🧘‍♀️ 做其他事</button>
+      <div id="countdown-box"></div>
+      <div id="res"></div>
+      <button id="closeImpBtn" class="btn">關閉急救站</button>
+    </div></div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+	
+	
+      const slogans = [
+        '每天進步一點點，成功自然來臨。',
+        '相信自己，你比想像中更強大。',
+        '堅持就是勝利，別放棄。',
+        '困難是讓人成長的養分。',
+        '你的努力，不會辜負任何付出。',
+        '夢想從行動開始，從現在出發。',
+        '挑戰自我，突破極限。',
+        '勇敢跨出第一步，你就已成功一半。',
+        '失敗是下一次成功的墊腳石。',
+        '用微笑面對每一天。',
+        '心有多大，舞台就有多大。',
+        '讓熱情點燃你前行的道路。',
+        '沒有不可能，只有尚未嘗試。',
+        '把握當下，善用每一分每一秒。',
+        '努力是一種習慣，成功是一種選擇。',
+        '成長的痛苦，是通往卓越的必經之路。',
+        '相信明天會更好。',
+        '堅持夢想，直到看見彩虹。',
+        '你就是自己的奇蹟。',
+        '每一次重整，只為更強大的自己。'
+      ];
+      function displayRandomSlogan() { const idx = Math.floor(Math.random()*slogans.length); document.getElementById('slogan').textContent=slogans[idx]; }
+
+      let selectedDate=null, startDate=null;
+      const totalDays=90, countdownMap=new Map(), today=new Date();
+      let currentYear=today.getFullYear(), currentMonth=today.getMonth();
+      let taskNames=JSON.parse(localStorage.getItem('taskNames')||'[]'), habitData=JSON.parse(localStorage.getItem('habitData')||'{}');
+
+      const calendarEl=document.getElementById('calendar'), titleEl=document.getElementById('calTitle');
+      const prevBtn=document.getElementById('prevMonth'), nextBtn=document.getElementById('nextMonth');
+      const startInput=document.getElementById('startDate'), progressEl=document.getElementById('progress');
+      const taskModal=document.getElementById('taskModal'), modalDateEl=document.getElementById('modalDate');
+      const taskListEl=document.getElementById('taskList'), taskInputEl=document.getElementById('taskInput');
+      const addTaskBtn=document.getElementById('addTaskBtn'), saveTaskBtn=document.getElementById('saveTaskBtn');
+      const impulseBtn=document.getElementById('impBtn'), impulseModal=document.getElementById('impulseModal');
+      const impulseCountEl=document.getElementById('impulseCountText');
+      const eatBtn=document.getElementById('eatBtn'), delayBtn=document.getElementById('delayBtn'), replaceBtn=document.getElementById('replaceBtn');
+      const countdownBox=document.getElementById('countdown-box'), resEl=document.getElementById('res');
+      const closeImpBtn=document.getElementById('closeImpBtn');
+
+      function saveHabits(){localStorage.setItem('habitData', JSON.stringify(habitData));}
+      function saveTasks(){localStorage.setItem('taskNames', JSON.stringify(taskNames));}
+      function updateCountdownMap(){countdownMap.clear(); if(!startDate)return; for(let i=0;i<totalDays;i++){const d=new Date(startDate);d.setDate(d.getDate()+i);countdownMap.set(`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`, totalDays-i);}}
+
+      function renderCalendar(){calendarEl.innerHTML=''; titleEl.textContent=`${currentYear} 年 ${currentMonth+1} 月`;['一','二','三','四','五','六','日'].forEach(w=>{const el=document.createElement('div');el.className='weekday';el.textContent=w;calendarEl.appendChild(el);});
+        const firstDay=new Date(currentYear,currentMonth,1).getDay(), offset=(firstDay===0?6:firstDay-1);
+        for(let i=0;i<offset;i++)calendarEl.appendChild(document.createElement('div'));
+        const daysInMonth=new Date(currentYear,currentMonth+1,0).getDate();
+        for(let d=1;d<=daysInMonth;d++){const cell=document.createElement('div');cell.className='day';cell.textContent=d;const key=`${currentYear}-${currentMonth+1}-${d}`;
+          if(today.getFullYear()===currentYear&&today.getMonth()===currentMonth&&today.getDate()===d)cell.classList.add('today');
+          const rec=habitData[key];if(rec&&rec.length===taskNames.length&&rec.every(Boolean))cell.classList.add('completed');
+          if(countdownMap.has(key)){const rem=countdownMap.get(key);const lbl=document.createElement('div');lbl.className='count';lbl.textContent=`D-${rem}`;cell.appendChild(lbl);if(rem===1)cell.style.border='2px solid #ff9800';}
+          cell.addEventListener('click',()=>openTaskModal(key,d));calendarEl.appendChild(cell);}
+        renderProgress();}
+      function renderProgress(){progressEl.innerHTML='';for(let i=0;i<totalDays;i++){const d=startDate?new Date(startDate):new Date(today);d.setDate(d.getDate()+i);const key=`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;const bar=document.createElement('div');bar.className='bar';if(habitData[key]&&habitData[key].length===taskNames.length&&habitData[key].every(Boolean))bar.classList.add('done');progressEl.appendChild(bar);}}
+
+      function openTaskModal(key,day){selectedDate=key;modalDateEl.textContent=`${currentMonth+1}月${day}日任務`;taskListEl.innerHTML='';const rec=habitData[key]||Array(taskNames.length).fill(false);taskNames.forEach((n,i)=>{const lbl=document.createElement('label');lbl.className='task';const cb=document.createElement('input');cb.type='checkbox';cb.checked=rec[i];cb.dataset.idx=i;const sp=document.createElement('span');sp.textContent=' '+n;const delBtn=document.createElement('button');delBtn.textContent='🗑️';delBtn.addEventListener('click',e=>{e.stopPropagation();taskNames.splice(i,1);for(const k in habitData)if(habitData[k].length>i)habitData[k].splice(i,1);saveTasks();saveHabits();renderCalendar();openTaskModal(key,day);});lbl.append(cb,sp,delBtn);taskListEl.appendChild(lbl);});taskModal.style.display='flex';}
+      function closeTaskModal(){taskModal.style.display='none';}
+      function saveTaskStates(){const cbs=taskListEl.querySelectorAll('input[type="checkbox"]');habitData[selectedDate]=Array.from(cbs).map(cb=>cb.checked);saveHabits();closeTaskModal();renderCalendar();}
+      function addNewTask(){const v=taskInputEl.value.trim();if(!v)return;taskNames.push(v);saveTasks();renderCalendar();if(selectedDate)openTaskModal(selectedDate,Number(selectedDate.split('-')[2]));taskInputEl.value='';}
+
+      function openImpulseModal(){const key=today.toDateString();let c=Number(localStorage.getItem(key)||0);localStorage.setItem(key,++c);impulseCountEl.textContent=`今天你已記錄 ${c} 次衝動`;clearInterval(window.timerInterval);countdownBox.textContent='';resEl.textContent='';impulseModal.style.display='flex';}
+      function closeImpulseModal(){clearInterval(window.timerInterval);impulseModal.style.display='none';}
+      function handleEat(){clearInterval(window.timerInterval);resEl.textContent='🍬 你選擇吃，但你是清醒的。吃不是逃避，是這次我選擇的方式。';}
+      function handleDelay(){clearInterval(window.timerInterval);countdownBox.innerHTML='<div id="countdown-box">倒數 <span id="timer">10:00</span></div>';resEl.innerHTML='☕ 喝杯熱水｜🚶‍♀️ 走3分鐘｜✍️ 寫下你真正需要的是什麼';let m=10,s=0;const tEl=document.getElementById('timer');window.timerInterval=setInterval(()=>{if(s===0){if(m===0){clearInterval(window.timerInterval);countdownBox.innerHTML+='<br/>⌛ 倒數完成';return;}m--;s=59;}else s--;tEl.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;},1000);}    
+      function handleReplace(){clearInterval(window.timerInterval);countdownBox.textContent='';resEl.innerHTML='🌱 試試這些替代行動：<br/>- 深呼吸5次<br/>- 喝水、走動<br/>- 寫下現在心情';}
+
+      prevBtn.addEventListener('click',()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--;}renderCalendar();});
+      nextBtn.addEventListener('click',()=>{currentMonth++;if(currentMonth>11){currentMonth=0;currentYear++;}renderCalendar();});
+      startInput.addEventListener('change',()=>{startDate=new Date(startInput.value);localStorage.setItem('countdownStartDate',startInput.value);updateCountdownMap();renderCalendar();});
+      addTaskBtn.addEventListener('click',addNewTask);
+      saveTaskBtn.addEventListener('click',saveTaskStates);
+      taskModal.addEventListener('click',e=>{if(e.target===taskModal)closeTaskModal();});
+
+      impulseBtn.addEventListener('click',openImpulseModal);
+      closeImpBtn.addEventListener('click',closeImpulseModal);
+      eatBtn.addEventListener('click',handleEat);
+      delayBtn.addEventListener('click',handleDelay);
+      replaceBtn.addEventListener('click',handleReplace);
+      impulseModal.addEventListener('click',e=>{if(e.target===impulseModal)closeImpulseModal();});
+
+      const sd=localStorage.getItem('countdownStartDate');if(sd){startDate=new Date(sd);startInput.value=sd;updateCountdownMap();}
+      renderCalendar();
+	  
+	  function adjustImpBtnWidth() {
+  const monthControls = document.getElementById('monthControls');
+  const impBtn = document.getElementById('impBtn');
+  if (monthControls && impBtn) {
+    // 讓衝動急救站按鈕寬度 = 月曆切換區塊寬度
+    impBtn.style.width = `${monthControls.offsetWidth}px`;
+  }
+}
+
+// 在初始化後以及視窗尺寸變更時都呼叫
+window.addEventListener('load', adjustImpBtnWidth);
+window.addEventListener('resize', adjustImpBtnWidth);
+
+	  
+	  
+	  
+      displayRandomSlogan();
+      function adjustImpBtnWidth(){const mc=document.getElementById('monthControls');document.getElementById('impBtn').style.width=mc.offsetWidth+'px';}
+      window.addEventListener('load',adjustImpBtnWidth);
+      window.addEventListener('resize',adjustImpBtnWidth);
+    });
+  </script>
+</body>
+</html>
