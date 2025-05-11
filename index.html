@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>日常打卡牆 + 衝動急救站</title>
+  <title>宇宙愛我</title>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet" />
   <style>
     :root {
@@ -57,14 +57,14 @@
   </style>
 </head>
 <body>
-  <header>🌿 我的打卡牆</header>
+  <header>🌿我選擇 精 雕 細 琢 愛 自己</header>
   <div class="top-panel">
     <div class="left-panel">
 <div class="controls">
   <!-- 先顯示倒數起始日 -->
   <label for="startDate">倒數起始日：<input type="date" id="startDate"></label>
   <!-- 再顯示衝動急救站按鈕 -->
-  <button id="impBtn">衝動急救站</button>
+  <button id="impBtn">一呼一吸和宇宙同在</button>
 </div>
 
       <div class="controls" id="monthControls">
@@ -87,14 +87,14 @@
     </div></div>
 
   <div class="impulse" id="impulseModal"><div class="content">
-      <h3>🍭 衝動急救站</h3>
+      <h3>🍭呼吸和宇宙同在</h3>
       <div id="impulseCountText"></div>
-      <button id="eatBtn" class="btn">🍬 吃下去</button>
+      <button id="eatBtn" class="btn">🍬 吃下去？</button>
       <button id="delayBtn" class="btn">⏳ 延後10分鐘</button>
       <button id="replaceBtn" class="btn">🧘‍♀️ 做其他事</button>
       <div id="countdown-box"></div>
       <div id="res"></div>
-      <button id="closeImpBtn" class="btn">關閉急救站</button>
+      <button id="closeImpBtn" class="btn">謝謝你 我愛你</button>
     </div></div>
 
   <script>
@@ -105,10 +105,10 @@
         '每天進步一點點，成功自然來臨。',
         '相信自己，你比想像中更強大。',
         '堅持就是勝利，別放棄。',
-        '困難是讓人成長的養分。',
-        '你的努力，不會辜負任何付出。',
+        '宇宙只會給我能完成的功課。',
+        '每一天我都在邁向 精 雕 細 琢。',
         '夢想從行動開始，從現在出發。',
-        '挑戰自我，突破極限。',
+        '挑戰自我，只對自己說肯定句。',
         '勇敢跨出第一步，你就已成功一半。',
         '失敗是下一次成功的墊腳石。',
         '用微笑面對每一天。',
@@ -117,11 +117,13 @@
         '沒有不可能，只有尚未嘗試。',
         '把握當下，善用每一分每一秒。',
         '努力是一種習慣，成功是一種選擇。',
-        '成長的痛苦，是通往卓越的必經之路。',
+        '成長的痛苦是一時的，打造出通往卓越的必經之路。',
         '相信明天會更好。',
         '堅持夢想，直到看見彩虹。',
         '你就是自己的奇蹟。',
-        '每一次重整，只為更強大的自己。'
+        '每一次重整，只為更強大的自己。',
+		'人生的捷徑是打扮。',
+		'放下執著，沒有什麼一定要吃的。',
       ];
       function displayRandomSlogan() { const idx = Math.floor(Math.random()*slogans.length); document.getElementById('slogan').textContent=slogans[idx]; }
 
@@ -166,7 +168,7 @@
       function openImpulseModal(){const key=today.toDateString();let c=Number(localStorage.getItem(key)||0);localStorage.setItem(key,++c);impulseCountEl.textContent=`今天你已記錄 ${c} 次衝動`;clearInterval(window.timerInterval);countdownBox.textContent='';resEl.textContent='';impulseModal.style.display='flex';}
       function closeImpulseModal(){clearInterval(window.timerInterval);impulseModal.style.display='none';}
       function handleEat(){clearInterval(window.timerInterval);resEl.textContent='🍬 你選擇吃，但你是清醒的。吃不是逃避，是這次我選擇的方式。';}
-      function handleDelay(){clearInterval(window.timerInterval);countdownBox.innerHTML='<div id="countdown-box">倒數 <span id="timer">10:00</span></div>';resEl.innerHTML='☕ 喝杯熱水｜🚶‍♀️ 走3分鐘｜✍️ 寫下你真正需要的是什麼';let m=10,s=0;const tEl=document.getElementById('timer');window.timerInterval=setInterval(()=>{if(s===0){if(m===0){clearInterval(window.timerInterval);countdownBox.innerHTML+='<br/>⌛ 倒數完成';return;}m--;s=59;}else s--;tEl.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;},1000);}    
+      function handleDelay(){clearInterval(window.timerInterval);countdownBox.innerHTML='<div id="countdown-box">倒數 <span id="timer">10:00</span></div>';resEl.innerHTML='☕ 喝杯熱水｜ 變美咒語：om ma ni ba mi hon｜✍️ 給自己2首歌的時間熱敷眼睛、聽冥想';let m=10,s=0;const tEl=document.getElementById('timer');window.timerInterval=setInterval(()=>{if(s===0){if(m===0){clearInterval(window.timerInterval);countdownBox.innerHTML+='<br/>⌛ 倒數完成';return;}m--;s=59;}else s--;tEl.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;},1000);}    
       function handleReplace(){clearInterval(window.timerInterval);countdownBox.textContent='';resEl.innerHTML='🌱 試試這些替代行動：<br/>- 深呼吸5次<br/>- 喝水、走動<br/>- 寫下現在心情';}
 
       prevBtn.addEventListener('click',()=>{currentMonth--;if(currentMonth<0){currentMonth=11;currentYear--;}renderCalendar();});
